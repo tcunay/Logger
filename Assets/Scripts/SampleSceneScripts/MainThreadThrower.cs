@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using Random = System.Random;
 
 namespace LoggerAsset.SampleSceneScripts
 {
@@ -11,7 +10,7 @@ namespace LoggerAsset.SampleSceneScripts
         private float _timer;
 
         protected override string ThreadMessage => "MAIN";
-        protected override Exception Exception => new NullReferenceException();
+        protected override Exception Exception => new NullReferenceException(ThreadMessage);
 
         private void Update()
         {

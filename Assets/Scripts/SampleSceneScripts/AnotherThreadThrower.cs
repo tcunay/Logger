@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Threading;
-using UnityEngine;
-using Random = System.Random;
 
 namespace LoggerAsset.SampleSceneScripts
 {
@@ -11,7 +9,7 @@ namespace LoggerAsset.SampleSceneScripts
         private bool _isThreadAlive;
         
         protected override string ThreadMessage => "ANOTHER";
-        protected override Exception Exception => new DivideByZeroException();
+        protected override Exception Exception => new DivideByZeroException(ThreadMessage);
 
         private void Start()
         {
