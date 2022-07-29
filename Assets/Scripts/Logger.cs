@@ -21,7 +21,7 @@ namespace LoggerAsset
 
         private void OnLogMessageReceived(string condition, string stacktrace, LogType type)
         {
-            _fileWriter.Write(condition);
+            _fileWriter.Write(new LogMessage(type, condition));
         }
 
         private void Update()
