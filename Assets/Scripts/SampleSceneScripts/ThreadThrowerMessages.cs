@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using UnityEngine;
 using Random = System.Random;
 
@@ -37,8 +38,24 @@ namespace LoggerAsset.SampleSceneScripts
                     break;
                 case 3:
                     throw Exception;
+                case 4:
+                    Debug.Log(GetLongMessage(4000));
                     break;
             }
+        }
+        
+        
+
+        private string GetLongMessage(int count)
+        {
+            var str = new StringBuilder();
+
+            for (int i = 0; i < count; i++)
+            {
+                str.Append("A");
+            }
+
+            return str.ToString();
         }
     }
 

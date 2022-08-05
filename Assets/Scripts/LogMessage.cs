@@ -15,5 +15,12 @@ namespace LoggerAsset
             Message = message;
             Time = DateTime.UtcNow;
         }
+
+        public LogMessage(LogType type, string message, DateTime time)
+        {
+            Type = type;
+            Message = message;
+            Time = time;
+        }
     }
 }

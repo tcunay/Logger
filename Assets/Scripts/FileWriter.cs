@@ -10,6 +10,7 @@ namespace LoggerAsset
         private const string LogTimeFormat = "{0:dd/MM/yyyy HH:mm:ss:ffff} [{1}]: {2}\r";
         private const int ThreadSleepTime = 5;
         private const int ManualResetEventWaitValue = 500;
+        private const int MaxMessageLenght = 3500;
 
         private readonly ConcurrentQueue<LogMessage> _messages = new();
         private readonly Thread _workingThread;
@@ -39,8 +40,22 @@ namespace LoggerAsset
 
         public void Write(LogMessage message)
         {
-            _messages.Enqueue(message);
-            _manualResetEvent.Set();
+            try
+            {
+                if (message.Message.Length > MaxMessageLenght)
+                {
+                    var preview = message.Message.Substring(0, MaxMessageLenght);
+                    message = new LogMessage(message.Type,
+                        $"Message us too long {message.Message.Length}. Preview: {preview}", message.Time);
+                }
+                
+                _messages.Enqueue(message);
+                _manualResetEvent.Set();
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         private void StoreMessages()
