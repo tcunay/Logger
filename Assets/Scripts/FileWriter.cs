@@ -9,6 +9,7 @@ namespace LoggerAsset
         private const string DateFormat = "yyyy-MM-dd";
         private const string LogTimeFormat = "{0:dd/MM/yyyy HH:mm:ss:ffff} [{1}]: {2}\r";
         private const int ThreadSleepTime = 5;
+        private const int CheckDateThreadSlipTime = 1000;
         private const int ManualResetEventWaitValue = 500;
         private const int MaxMessageLenght = 3500;
 
@@ -18,6 +19,8 @@ namespace LoggerAsset
         private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(true);
 
         private FileAppender _appender;
+        private Thread _checkNewDateThread;
+        private DateTime _previousDate;
         private bool _isDisposing;
         private string _filePath;
 
@@ -25,16 +28,40 @@ namespace LoggerAsset
         {
             _folder = folder;
             ManagePath();
+            
             _workingThread = new Thread(StoreMessages)
             {
                 IsBackground = true,
                 Priority = ThreadPriority.Normal
             };
+            _checkNewDateThread = new Thread(CheckNewDay)
+            {
+                IsBackground = true,
+                Priority = ThreadPriority.BelowNormal
+            };
+            
             _workingThread.Start();
+            _checkNewDateThread.Start();
+        }
+
+        private void CheckNewDay()
+        {
+            while (_isDisposing == false)
+            {
+                DateTime currentDate = DateTime.UtcNow;
+                if (currentDate.Day != _previousDate.Day)
+                {
+                    _previousDate = currentDate;
+                    ManagePath();
+                }
+                
+                Thread.Sleep(CheckDateThreadSlipTime);
+            }
         }
 
         private void ManagePath()
         {
+            _previousDate = DateTime.UtcNow;
             _filePath = $"{_folder}/{DateTime.UtcNow.ToString(DateFormat)}.log";
         }
 
@@ -99,6 +126,7 @@ namespace LoggerAsset
         {
             _isDisposing = true;
             _workingThread?.Abort();
+            _checkNewDateThread?.Abort();
             _manualResetEvent?.Dispose();
             GC.SuppressFinalize(this);
         }
