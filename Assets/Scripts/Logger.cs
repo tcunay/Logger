@@ -20,6 +20,8 @@ namespace LoggerAsset
             _fileWriter = new FileWriter(_workDirectory);
             Application.logMessageReceivedThreaded += OnLogMessageReceived;
         }
+        
+        public void OpenFilesDirectory() => UnityEditor.EditorUtility.RevealInFinder(_workDirectory);
 
         private void OnLogMessageReceived(string condition, string stacktrace, LogType type)
         {
@@ -33,7 +35,7 @@ namespace LoggerAsset
         {
 #if UNITY_EDITOR
             if(Input.GetKeyUp(KeyCode.L))
-                UnityEditor.EditorUtility.RevealInFinder(_workDirectory);
+                OpenFilesDirectory();
 #endif
         }
 
