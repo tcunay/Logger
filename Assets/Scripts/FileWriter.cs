@@ -4,17 +4,19 @@ using System.Threading;
 
 namespace LoggerAsset
 {
-    public class FileWriter
+    public class FileWriter : IDisposable
     {
         private const string DateFormat = "yyyy-MM-dd";
         private const string LogTimeFormat = "{0:dd/MM/yyyy HH:mm:ss:ffff} [{1}]: {2}\r";
         private const int ThreadSleepTime = 5;
-        
-        private readonly string _folder;
+        private const int ManualResetEventWaitValue = 500;
+
+        private readonly ConcurrentQueue<LogMessage> _messages = new();
         private readonly Thread _workingThread;
+        private readonly string _folder;
+        private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(true);
 
         private FileAppender _appender;
-        private readonly ConcurrentQueue<LogMessage> _messages = new();
         private bool _isDisposing;
         private string _filePath;
 
@@ -38,6 +40,7 @@ namespace LoggerAsset
         public void Write(LogMessage message)
         {
             _messages.Enqueue(message);
+            _manualResetEvent.Set();
         }
 
         private void StoreMessages()
@@ -71,7 +74,18 @@ namespace LoggerAsset
                         break;
                     }
                 }
+
+                _manualResetEvent.Reset();
+                _manualResetEvent.WaitOne(ManualResetEventWaitValue);
             }
+        }
+
+        public void Dispose()
+        {
+            _isDisposing = true;
+            _workingThread?.Abort();
+            _manualResetEvent?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }
