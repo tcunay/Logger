@@ -13,22 +13,22 @@ namespace LoggerAsset
         private const int ManualResetEventWaitValue = 500;
         private const int MaxMessageLenght = 3500;
 
-        private readonly ConcurrentQueue<LogMessage> _messages = new();
+        private readonly ConcurrentQueue<LogMessage> _messages;
+        private readonly ManualResetEvent _manualResetEvent;
         private readonly Thread _workingThread;
+        private readonly Thread _checkNewDateThread;
         private readonly string _folder;
-        private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(true);
 
         private FileAppender _appender;
-        private Thread _checkNewDateThread;
         private DateTime _previousDate;
         private bool _isDisposing;
         private string _filePath;
 
         public FileWriter(string folder)
         {
+            _messages = new ConcurrentQueue<LogMessage>();
+            _manualResetEvent = new ManualResetEvent(true);
             _folder = folder;
-            ManagePath();
-            
             _workingThread = new Thread(StoreMessages)
             {
                 IsBackground = true,
@@ -40,6 +40,7 @@ namespace LoggerAsset
                 Priority = ThreadPriority.BelowNormal
             };
             
+            ManagePath();
             _workingThread.Start();
             _checkNewDateThread.Start();
         }
@@ -62,7 +63,7 @@ namespace LoggerAsset
         private void ManagePath()
         {
             _previousDate = DateTime.UtcNow;
-            _filePath = $"{_folder}/{DateTime.UtcNow.ToString(DateFormat)}.log";
+            _filePath = $"{_folder}/{_previousDate.ToString(DateFormat)}.log";
         }
 
         public void Write(LogMessage message)
@@ -103,13 +104,9 @@ namespace LoggerAsset
                             string.Format(LogTimeFormat, message.Time, message.Type, message.Message);
 
                         if (_appender.Append(messageToWrite))
-                        {
                             _messages.TryDequeue(out message);
-                        }
                         else
-                        {
                             Thread.Sleep(ThreadSleepTime);
-                        }
                     }
                     catch
                     {

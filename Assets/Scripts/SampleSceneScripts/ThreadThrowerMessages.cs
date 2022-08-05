@@ -23,7 +23,7 @@ namespace LoggerAsset.SampleSceneScripts
 
         protected void SendLog()
         {
-            int randomValue = _random.Next(0, 4);
+            int randomValue = _random.Next(0, 5);
 
             switch (randomValue)
             {
@@ -43,8 +43,6 @@ namespace LoggerAsset.SampleSceneScripts
                     break;
             }
         }
-        
-        
 
         private string GetLongMessage(int count)
         {
@@ -57,13 +55,5 @@ namespace LoggerAsset.SampleSceneScripts
 
             return str.ToString();
         }
-    }
-
-    public interface IThrowerMessages
-    {
-        string Log { get; }
-        string Warning { get; }
-        string Error { get; }
-        Exception Exception { get; }
     }
 }
