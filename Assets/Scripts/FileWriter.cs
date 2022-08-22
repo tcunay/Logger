@@ -49,13 +49,9 @@ namespace LoggerAsset
         {
             while (_isDisposing == false)
             {
-                DateTime currentDate = DateTime.UtcNow;
-                if (currentDate.Day != _previousDate.Day)
-                {
-                    _previousDate = currentDate;
+                if (_previousDate.Day != DateTime.UtcNow.Day)
                     ManagePath();
-                }
-                
+
                 Thread.Sleep(CheckDateThreadSlipTime);
             }
         }
